@@ -27,7 +27,6 @@ url_proposal_from_hubble = "https://hubble.figment.io/cosmos/chains/cosmoshub-ve
 version_map = ['1']*6 + ['2']*14 + ['3']*18 + ['4']*1000
 
 for id in range(1, last_proposal_id+1):
-    print(url_proposal_from_cosmostation + str(id))
     r_proposal_id = requests.get(url=url_proposal_from_cosmostation + str(id))
     proposal_id = r_proposal_id.json()
     try :
