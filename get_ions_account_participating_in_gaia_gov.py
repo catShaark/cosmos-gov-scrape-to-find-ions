@@ -34,4 +34,4 @@ for proposal in l_gov_proposals:
             s_gov_account.add("voter")
 
 g = open("ions_account_that_participate_in_cosmos_gov.json", "w")
-json.dump(l_ion_accounts.intersection(s_gov_account), g)
+json.dump(list(l_ion_accounts.intersection(s_gov_account)), g)
