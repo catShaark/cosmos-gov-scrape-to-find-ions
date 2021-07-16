@@ -1,6 +1,7 @@
 import re
 from urllib.request import urlopen
-
+from crawl_biggdiper import get_validator_acc
+from crawl_hubble import get_validator_valoper
 import regex as regex
 import requests
 import json
@@ -8,6 +9,12 @@ import json
 from bs4 import BeautifulSoup
 from regex import Regex
 
+
+
+
+# to get all validator from cosmoshub-4
+# get mapping from valoper to acc addr
+# get mapping from moniker to acc addr
 url_validators = "https://api.cosmostation.io/v1/staking/validators"
 r_validators = requests.get(url=url_validators)
 all_validators = r_validators.json()
@@ -15,33 +22,45 @@ all_validators = r_validators.json()
 moniker_to_addr = {}
 valoper_to_addr = {}
 for v in all_validators:
-    moniker_to_addr[re.sub("[^0-9a-zA-Z]+", "", v['moniker'])] = v['account_address']
+    moniker_to_addr[v['moniker'].strip()] = v['account_address']
     valoper_to_addr[v['operator_address']] = v['account_address']
 
 
+k = open("list_of_special_addr.txt", "r+")
 
 url_hubble = "https://hubble.figment.io/cosmos/chains/cosmoshub-"
-
 
 for i in range(1, 4):
     document = urlopen(url_hubble + str(i))
     html = document.read()
     soup = BeautifulSoup(html, "html.parser")
-    validators_valoper = soup.findAll("td", {'class': "d-none"})
-    validators_moiker = soup.findAll("strong")
-    for moniker, valoper in zip(validators_moiker, validators_valoper):
-        try:
-            valoper = re.search("cosmos[\S]*", str(valoper))[0]
-            moniker = re.sub("[^0-9a-zA-Z]+", "", moniker.contents[0])
-            print(valoper, moniker)
-            moniker_to_addr[moniker] = valoper_to_addr[valoper]
+    validators = soup.findAll("tr")[1:]
+    for validator in validators:
+        valoper = validator.find("td", {'class': "d-none"})
+        moniker = validator.find("strong")
+        if moniker is None:
+            big_addr = validator.find("span", {'class': 'technical'}).contents[0]
+            temp = get_validator_valoper(i, big_addr)
+            moniker_to_addr[big_addr[:13] + '...'] = temp
+            print(1, big_addr, temp)
 
-        except:
-            print(valoper, moniker, "fuck")
-            pass
-        if moniker == "Delega Networks♾ ":
-            print(valoper)
-            print(valoper_to_addr[valoper])
+        else:
+            try:
+                moniker = moniker.contents[0].strip()
+                valoper = re.search("cosmos[\S]*", str(valoper))[0]
+                print(2, valoper, moniker)
+                moniker_to_addr[moniker] = valoper_to_addr[valoper]
+            except:
+                try:
+                    moniker_to_addr[moniker] = get_validator_acc(hub_version=i, valoper=valoper)
+                    print(4, valoper, moniker)
+                except:
+                    print(5, valoper, moniker)
+                    pass
+
+
+
+
 
 
 f1 = open("ions.json", "r")
@@ -60,16 +79,17 @@ print('-----------------')
 for proposal in l_gov_proposals:
     votes = proposal['votes']
     for vote in votes:
+
         if vote["voter"] == "":
-            if moniker_to_addr.get(re.sub("[^0-9a-zA-Z]+", "", vote["moniker"])) is None:
-                s_gov_account.add(re.sub("[^0-9a-zA-Z]+", "", vote["moniker"]))
-                print(vote["moniker"])
+            moniker = vote["moniker"].strip()
+            if moniker_to_addr.get(moniker) is None:
+                print(moniker)
             else:
-                s_gov_account.add(moniker_to_addr[re.sub("[^0-9a-zA-Z]+", "",vote["moniker"])])
-        else :
+                s_gov_account.add(moniker_to_addr[moniker])
+        else:
             s_gov_account.add("voter")
 
-h = open("dict.json", "w")
+h = open("dict2.json", "w")
 json.dump(moniker_to_addr, h)
 
 g = open("ions_account_that_participate_in_cosmos_gov.json", "w")
