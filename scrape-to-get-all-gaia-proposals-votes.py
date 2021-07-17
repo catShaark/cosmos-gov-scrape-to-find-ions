@@ -32,15 +32,15 @@ for id in range(1, last_proposal_id+1):
     try :
         e = proposal_id["error_code"]
         print(e)
-        time.sleep(2)
+
         continue
     except KeyError:
-        time.sleep(2)
         pass
     if len(proposal_id["votes"]) != 0:
+        proposal_id['id'] = id
         json.dump(proposal_id, f)
         f.write('\n')
-        time.sleep(2)
+
     else:
 
         url = url_proposal_from_hubble.replace('version', version_map[id]) + str(id)
@@ -62,10 +62,10 @@ for id in range(1, last_proposal_id+1):
         vote_options_and_amount = soup.findAll("div", {"class": re.compile(r"tally flex-column align-items-center*")})
         vote_options = ["yes_amount", "abstain_amount", "no_amount", "no_with_veto_amount"]
 
-        for id, vo in enumerate(vote_options_and_amount):
+        for idd, vo in enumerate(vote_options_and_amount):
 
 
-            tally[vote_options[id]] = vo.find('span').contents[0]
+            tally[vote_options[idd]] = vo.find('span').contents[0]
 
 
 
@@ -99,9 +99,10 @@ for id in range(1, last_proposal_id+1):
             v_list.append(vote)
         proposal_id["tally"] = tally
         proposal_id["votes"] = v_list
+        proposal_id["id"] = id
         json.dump(proposal_id, f)
         f.write('\n')
-        time.sleep(2)
+
 
 
 
