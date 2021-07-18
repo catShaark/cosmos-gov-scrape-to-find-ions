@@ -2,9 +2,9 @@ import json
 import numpy
 import numpy as np
 
-f = open("dict2.json", "r")
-g = open("ions_account_that_participate_in_cosmos_gov_2.json", "r")
-k = open("votes.jsonl", "r")
+f = open("moniker_to_addr.json", "r")
+g = open("accounts_voted_and_get_ions.json", "r")
+k = open("proposals_gaia.jsonl", "r")
 d = open("ions.json", "r")
 q = open("accounts_that_voted_but_didn't_recivece_airdrop.txt", "r")
 ll = open("delegator_of_sikka.json", "r")
@@ -22,12 +22,12 @@ for id, account in enumerate(lis):
     accounts[account] = {"ions": ions_of[account],
                          "num_of_votes": 0,
                          "num_of_votes_that_pass": 0,
-                         "id": id,
                          "double_voting": 0,
                          "yes": 0,
                          "no": 0,
                          "abstain": 0,
-                         "veto": 0
+                         "veto": 0,
+                         "votes": {},
                          }
 
 
@@ -44,14 +44,16 @@ A = np.zeros((138, 37))
 set_voting_accounts = set()
 
 for proposal in proposals[:26]:
-    id = proposal["id"]
+
     s = set()
     for vote in proposal['votes']:
         voter = vote['voter']
         if voter == "":
             voter = moniker_to_addr[vote["moniker"]]
+        if voter in accounts_that_voted_but:
+            print('%s,%s,%d,%s' %(voter, vote["moniker"], id, vote["option"]))
         if accounts.get(voter) is not None:
-        # accounts[voter][id] = [vote["option"]]
+            accounts[voter]["votes"][id] = vote["option"]
             accounts[voter]["num_of_votes"] += 1
             if voter not in s:
                 s.add(voter)
@@ -76,13 +78,14 @@ for proposal in proposals[:26]:
                 #     accounts[voter]["num_of_votes_that_pass"] += 1
         set_voting_accounts.add(voter)
 
+
 num_of_outlier = 0
 
-for acc in accounts:
-    details = accounts[acc]
-    if details["ions"] < details["num_of_votes"]:
-        num_of_outlier += 1
-        print('%s,%d,%d,%d,%d,%d,%d' %(acc, details["ions"], details["num_of_votes"], details["abstain"], details["no"], details["veto"], details["double_voting"]))
+# for acc in accounts:
+#     details = accounts[acc]
+#     if details["ions"] < details["num_of_votes"]:
+#         num_of_outlier += 1
+#         print('%s,%d,%d,%d,%d,%d,%d' %(acc, details["ions"], details["num_of_votes"], details["abstain"], details["no"], details["veto"], details["double_voting"]))
     # if details["double_voting"] != 0:
     #     print(',', details["double_voting"], end=" ")
     # if details["abstain"] != 0:
@@ -132,10 +135,23 @@ print(len(set_voting_accounts.intersection(delegators_of_sikka)))
 # for i in accounts_not_staked_to_sikka_but_have_ions:
 #     print(i)
 
+owner_addr = set(moniker_to_addr.values())
 
 
-print(len(accounts))
+for i in accounts_not_staked_to_sikka_but_have_ions:
+    if i in owner_addr:
+        try:
+            print(i, accounts[i]["votes"], )
+        except:
+            pass
 
+
+# url = "https://api.cosmostation.io/v1/account/new_txs/cosmos14gjm0h6llttp87255lnw8vyw78pshav995f0a2?from=0&limit=50"
+# for i in set_voting_accounts:
+
+
+for i in accounts_not_staked_to_sikka_but_have_ions.difference(set_voting_accounts):
+    print(i)
 
 
 

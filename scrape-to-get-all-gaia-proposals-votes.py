@@ -1,15 +1,12 @@
 import json
-import logging
 import re
-import time
-import traceback
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
 import requests
 
 
-f = open("votes.jsonl", 'w')
+f = open("proposals_gaia.jsonl", 'w')
 
 
 url_proposals = "https://api.cosmostation.io/v1/gov/proposals"
@@ -29,6 +26,7 @@ version_map = ['1']*6 + ['2']*14 + ['3']*18 + ['4']*1000
 for id in range(1, last_proposal_id+1):
     r_proposal_id = requests.get(url=url_proposal_from_cosmostation + str(id))
     proposal_id = r_proposal_id.json()
+    print(url_proposal_from_cosmostation + str(id))
     try :
         e = proposal_id["error_code"]
         print(e)
@@ -63,8 +61,6 @@ for id in range(1, last_proposal_id+1):
         vote_options = ["yes_amount", "abstain_amount", "no_amount", "no_with_veto_amount"]
 
         for idd, vo in enumerate(vote_options_and_amount):
-
-
             tally[vote_options[idd]] = vo.find('span').contents[0]
 
 
