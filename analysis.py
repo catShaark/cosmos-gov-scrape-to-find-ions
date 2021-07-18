@@ -3,10 +3,10 @@ import numpy
 import numpy as np
 
 f = open("moniker_to_addr.json", "r")
-g = open("accounts_voted_and_get_ions.json", "r")
-k = open("proposals_gaia.jsonl", "r")
+g = open("voting_accounts_that_get_ions.json", "r")
+k = open("gaia_proposals.jsonl", "r")
 d = open("ions.json", "r")
-q = open("accounts_that_voted_but_didn't_recivece_airdrop.txt", "r")
+q = open("voting_accounts_that_get_no_ions.txt", "r")
 ll = open("delegator_of_sikka.json", "r")
 
 accounts_that_voted_but = q.read().splitlines()
@@ -49,9 +49,9 @@ for proposal in proposals[:26]:
     for vote in proposal['votes']:
         voter = vote['voter']
         if voter == "":
-            voter = moniker_to_addr[vote["moniker"]]
+            voter = moniker_to_addr[vote.get("moniker")]
         if voter in accounts_that_voted_but:
-            print('%s,%s,%d,%s' %(voter, vote["moniker"], id, vote["option"]))
+            print('%s,%s,%d,%s' %(voter, vote.get("moniker"), id, vote["option"]))
         if accounts.get(voter) is not None:
             accounts[voter]["votes"][id] = vote["option"]
             accounts[voter]["num_of_votes"] += 1

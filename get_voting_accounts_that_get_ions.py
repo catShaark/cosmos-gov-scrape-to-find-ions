@@ -26,7 +26,6 @@ for json_str in json_list:
 for proposal in l_gov_proposals:
     votes = proposal['votes']
     for vote in votes:
-
         if vote["voter"] == "":
             moniker = vote["moniker"].strip()
             if moniker_to_addr.get(moniker) is None:
@@ -34,10 +33,11 @@ for proposal in l_gov_proposals:
             else:
                 s_gov_account.add(moniker_to_addr[moniker])
         else:
-            s_gov_account.add("voter")
+            s_gov_account.add(vote["voter"])
 
-h = open("moniker_to_addr.json", "w")
-json.dump(moniker_to_addr, h)
 
-g = open("ions_account_that_participate_in_cosmos_gov.json", "w")
+g = open("voting_accounts_that_get_ions2.json", "w")
 json.dump(list(l_ion_accounts.intersection(s_gov_account)), g)
+
+k = open("voting_accounts.json", "w")
+json.dump(list(s_gov_account), k)

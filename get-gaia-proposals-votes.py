@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import requests
 
 
-f = open("proposals_gaia.jsonl", 'w')
+f = open("gaia_proposals.jsonl", 'w')
 
 
 url_proposals = "https://api.cosmostation.io/v1/gov/proposals"
